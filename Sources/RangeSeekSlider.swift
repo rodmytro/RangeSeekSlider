@@ -68,16 +68,30 @@ import UIKit
         }
     }
 
-    /// The font of the minimum value text label. If not set, the default is system font size 12.0.
-    open var minLabelFont: UIFont = UIFont.systemFont(ofSize: 12.0) {
+    /// The custom minimum label text
+    @IBInspectable open var customSelectedMinValue: String? = nil {
+        didSet {
+            refresh()
+        }
+    }
+
+    /// The custom maximum label text
+    @IBInspectable open var customSelectedMaxValue: String? = nil {
+        didSet {
+            refresh()
+        }
+    }
+
+    /// The font of the minimum value text label.
+    open var minLabelFont: UIFont = UIFont(name: "OpenSans-Regular", size: 16)! {
         didSet {
             minLabel.font = minLabelFont as CFTypeRef
             minLabel.fontSize = minLabelFont.pointSize
         }
     }
 
-    /// The font of the maximum value text label. If not set, the default is system font size 12.0.
-    open var maxLabelFont: UIFont = UIFont.systemFont(ofSize: 12.0) {
+    /// The font of the maximum value text label.
+    open var maxLabelFont: UIFont = UIFont(name: "OpenSans-Regular", size: 16)! {
         didSet {
             maxLabel.font = maxLabelFont as CFTypeRef
             maxLabel.fontSize = maxLabelFont.pointSize
@@ -157,9 +171,9 @@ import UIKit
     @IBInspectable open var step: CGFloat = 0.0
 
     /// Handle slider with custom image, you can set custom image for your handle
-    @IBInspectable open var handleImage: UIImage? {
+    @IBInspectable open var leftHandleImage: UIImage? {
         didSet {
-            guard let image = handleImage else {
+            guard let image = leftHandleImage else {
                 return
             }
             
@@ -168,6 +182,17 @@ import UIKit
             
             leftHandle.frame = handleFrame
             leftHandle.contents = image.cgImage
+        }
+    }
+
+    @IBInspectable open var rightHandleImage: UIImage? {
+        didSet {
+            guard let image = rightHandleImage else {
+                return
+            }
+
+            var handleFrame = CGRect.zero
+            handleFrame.size = image.size
 
             rightHandle.frame = handleFrame
             rightHandle.contents = image.cgImage
@@ -411,16 +436,15 @@ import UIKit
         rightHandle.frame = handleFrame
 
         // draw the text labels
-        let labelFontSize: CGFloat = 12.0
-        let labelFrame: CGRect = CGRect(x: 0.0, y: 50.0, width: 75.0, height: 14.0)
+        let labelFrame: CGRect = CGRect(x: 0.0, y: 50.0, width: 75.0, height: 19.0)
 
-        minLabelFont = UIFont.systemFont(ofSize: labelFontSize)
+        minLabelFont = UIFont(name: "OpenSans-Regular", size: 16)!
         minLabel.alignmentMode = CATextLayerAlignmentMode.center
         minLabel.frame = labelFrame
         minLabel.contentsScale = UIScreen.main.scale
         layer.addSublayer(minLabel)
 
-        maxLabelFont = UIFont.systemFont(ofSize: labelFontSize)
+        maxLabelFont = UIFont(name: "OpenSans-Regular", size: 16)!
         maxLabel.alignmentMode = CATextLayerAlignmentMode.center
         maxLabel.frame = labelFrame
         maxLabel.contentsScale = UIScreen.main.scale
@@ -476,13 +500,18 @@ import UIKit
         minLabel.isHidden = hideLabels || disableRange
         maxLabel.isHidden = hideLabels
 
-        if let replacedString = delegate?.rangeSeekSlider(self, stringForMinValue: selectedMinValue) {
+        if let text = customSelectedMinValue {
+            minLabel.string = text
+        } else if let replacedString = delegate?.rangeSeekSlider(self, stringForMinValue: selectedMinValue) {
             minLabel.string = replacedString
         } else {
             minLabel.string = numberFormatter.string(from: selectedMinValue as NSNumber)
         }
 
-        if let replacedString = delegate?.rangeSeekSlider(self, stringForMaxValue: selectedMaxValue) {
+
+        if let text = customSelectedMaxValue {
+            maxLabel.string = text
+        } else if let replacedString = delegate?.rangeSeekSlider(self, stringForMaxValue: selectedMaxValue) {
             maxLabel.string = replacedString
         } else {
             maxLabel.string = numberFormatter.string(from: selectedMaxValue as NSNumber)
@@ -505,7 +534,7 @@ import UIKit
             sliderLineBetweenHandles.backgroundColor = initialColor
             sliderLine.backgroundColor = initialColor
 
-            let color: CGColor = (handleImage == nil) ? initialColor : UIColor.clear.cgColor
+            let color: CGColor = (rightHandleImage == nil) ? initialColor : UIColor.clear.cgColor
             leftHandle.backgroundColor = color
             leftHandle.borderColor = color
             rightHandle.backgroundColor = color
@@ -518,7 +547,7 @@ import UIKit
             sliderLine.backgroundColor = tintCGColor
 
             let color: CGColor
-            if let _ = handleImage {
+            if let _ = rightHandleImage {
                 color = UIColor.clear.cgColor
             } else {
                 color = handleColor?.cgColor ?? tintCGColor
