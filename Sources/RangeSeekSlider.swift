@@ -648,7 +648,7 @@ import UIKit
         }
     }
 
-    fileprivate func refresh() {
+    func refresh() {
         if enableStep && step > 0.0 {
             selectedMinValue = CGFloat(roundf(Float(selectedMinValue / step))) * step
             if let previousStepMinValue = previousStepMinValue, previousStepMinValue != selectedMinValue {
